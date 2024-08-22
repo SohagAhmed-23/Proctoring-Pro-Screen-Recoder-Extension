@@ -1,0 +1,43 @@
+{
+  "manifest_version": 3,
+  "name": "Proctoring Pro",
+  "description": "A chrome extension for elearning23",
+  "version": "0.0.1",
+  "icons": {
+    "16": "logo/logo-16.png",
+    "48": "logo/logo-48.png",
+    "128": "logo/logo-128.png"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "logo/logo-16.png",
+      "48": "logo/logo-48.png",
+      "128": "logo/logo-128.png"
+    }
+  },
+  "permissions": [
+    "system.display",
+    "desktopCapture",
+    "activeTab",
+    "tabs",
+    "scripting",
+    "unlimitedStorage",
+    "browsingData",
+    "notifications",
+    "webRequest",
+    "storage",
+    "tabCapture",
+    "downloads"
+  ],
+  "optional_permissions": [
+    "bookmarks",
+    "declarativeContent"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "externally_connectable": {
+    "matches": ["https://elearning23.com/*"]
+  }
+}
