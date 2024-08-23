@@ -6,10 +6,10 @@
     height: 150px;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid #010000;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid #4b4a4a;
+    box-shadow: 0 0 10px rgba(252, 252, 252, 0.5);
     z-index: 10000;
-    background: #000;
+    background: #ffffff;
     /* cursor: move; */
   }
   
