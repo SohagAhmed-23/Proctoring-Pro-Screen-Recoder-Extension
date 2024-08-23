@@ -176,37 +176,7 @@ function removeCameraOverlay() {
   }
 }
 
-// Function to create the camera overlay
-function createCameraOverlay() {
-  if (!document.getElementById('cameraOverlay')) {
-    const cameraOverlay = document.createElement('div');
-    cameraOverlay.id = 'cameraOverlay';
 
-    const video = document.createElement('video');
-    video.id = 'cameraStream';
-    video.autoplay = true;
-
-    cameraOverlay.appendChild(video);
-    document.body.appendChild(cameraOverlay);
-
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
-      video.srcObject = stream;
-    }).catch((error) => {
-      console.error('Error accessing camera:', error);
-    });
-  }
-}
-
-// Handle tab activation and update events
-chrome.tabs.onActivated.addListener(function () {
-  chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-    setTimeout(function () {
-      if (stream) {
-        //sendCapturedFrame(stream); // Implement sendCapturedFrame as needed
-      }
-    }, 3000); // 3 seconds delay
-  });
-});
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url.includes("mod/quiz/review.php")) {
