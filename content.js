@@ -1,5 +1,6 @@
 // Check the current URL and create the camera overlay if conditions are met
-if (window.location.href.includes("/mod/quiz/")) {
+if (window.location.href.includes("/mod/quiz/") && !window.location.href.includes("/mod/quiz/review.php") && 
+!window.location.href.includes("/mod/quiz/view.php")) {
   
     // Function to create the camera overlay
     function createCameraOverlay() {
