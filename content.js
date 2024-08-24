@@ -1,7 +1,10 @@
 // Check the current URL and create the camera overlay if conditions are met
 // content.js
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
- console.log(message.windowID);
+
+  if(message.action == "windowid") {
+  console.log("window id is ",message.windowID);
+  }
 
 });
 
