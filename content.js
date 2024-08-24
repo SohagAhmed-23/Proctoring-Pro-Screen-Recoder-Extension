@@ -1,4 +1,12 @@
 // Check the current URL and create the camera overlay if conditions are met
+// content.js
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+ console.log(message.windowID);
+
+});
+
+
+
 if (window.location.href.includes("/mod/quiz/") && !window.location.href.includes("/mod/quiz/review.php") && 
 !window.location.href.includes("/mod/quiz/view.php")) {
   

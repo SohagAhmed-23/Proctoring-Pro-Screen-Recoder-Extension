@@ -62,6 +62,25 @@ function openPopupWindow(tab, popupWidth, popupHeight) {
   });
 }
 
+// Listener for when any window is created and send the windowid to the local
+chrome.windows.onCreated.addListener((window) => {
+  console.log(`Window with ID ${window.id} has been created.`);
+  chrome.tabs.query({  }, (tabs) => {
+    let targetTabId = null;
+     for(let i = 0;i < tabs.length;i++) {
+      if(tabs[i].url.includes("/mod/quiz/view.php")) {
+        //console.log("found it",tabs[i].url);
+        targetTabId = tabs[i]
+        break;
+      }
+     }
+     if(targetTabId) {
+       console.log(targetTabId,targetTabId.url); 
+      chrome.tabs.sendMessage(targetTabId.id, { windowID : window.id});
+     }
+  });
+});
+
 // Listener for when any window is closed
 chrome.windows.onRemoved.addListener((windowId) => {
   if (popupWindowId === windowId) {
