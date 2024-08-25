@@ -1,13 +1,30 @@
-// Check the current URL and create the camera overlay if conditions are met
-// content.js
+// Listener for messages from background script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-
-  if(message.action == "windowid") {
-  console.log("window id is ",message.windowID);
+  if (message.action === "windowStatus") {
+    handleWindowStatus(message.isWindowOpen);
   }
-
 });
 
+// Function to handle window status
+function handleWindowStatus(isWindowOpen) {
+  // Update the UI or perform actions based on the window status
+  const existingPara = document.getElementById('windowStatus');
+  
+  if (isWindowOpen) {
+    if (!existingPara) {  // Only create the paragraph if it doesn't exist
+      const para = document.createElement('p');
+      para.id = 'windowStatus';
+      para.innerHTML = "Window is open";
+      document.body.appendChild(para);
+    }
+    console.log("Popup window is open"); 
+  } else {
+    if (existingPara) {  // Remove the paragraph if it exists
+      existingPara.remove();
+    }
+    console.log("Popup window is closed");
+  }
+}
 
 
 if (window.location.href.includes("/mod/quiz/") && !window.location.href.includes("/mod/quiz/review.php") && 
