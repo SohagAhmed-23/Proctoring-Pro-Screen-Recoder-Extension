@@ -3,8 +3,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "windowStatus") {
     handleWindowStatus(message.isWindowOpen);
   }
+  if(message.action === "isScreenSharingActive") {
+    isScreenSharingActive(message.isActive);
+
+  }
 });
 
+//function to checke the screen was sahre or not 
+function isScreenSharingActive(isActive)
+{
+  if(isActive) {
+   console.log("screeen share is Active ");
+  }
+  else {
+    console.log("screen share is not Actvie");
+    
+  }
+}
 // Function to handle window status
 function handleWindowStatus(isWindowOpen) {
   // Update the UI or perform actions based on the window status

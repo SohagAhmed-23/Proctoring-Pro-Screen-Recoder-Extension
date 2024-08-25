@@ -133,6 +133,15 @@ function updateScreenSharingStatus() {
   } else {
     statusElement.textContent = "Screen sharing is not active";
   }
+  
+  chrome.tabs.query({}, (tabs) => {
+    for (let i = 0; i < tabs.length; i++) {
+      if (tabs[i].url.includes("/mod/quiz/")) {
+        chrome.tabs.sendMessage(tabs[i].id, { action: "isScreenSharingActive", isActive: isActive });
+      }
+    }
+  });
+  
 }
 
 // Function to stop recording and save the file
