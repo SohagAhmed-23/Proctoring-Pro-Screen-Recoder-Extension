@@ -1,5 +1,9 @@
+// Import the notification utilities
+importScripts("js/notificationUtils.js");
+
 let popupWindowId = null;
 let checkIntervalId = null; // To store the ID of the interval
+
 
 // Listen for when the extension icon is clicked
 chrome.action.onClicked.addListener((tab) => {
