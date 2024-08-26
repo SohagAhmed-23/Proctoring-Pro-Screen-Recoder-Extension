@@ -64,21 +64,27 @@ function startCheckingPopupWindowStatus() {
   checkIntervalId = setInterval(() => {
     if (popupWindowId !== null) {
       chrome.windows.get(popupWindowId, (popupWindow) => {
-        if (chrome.runtime.lastError || !popupWindow) {
+        if (chrome.runtime.lastError) {
+          console.error("Error retrieving popup window:", chrome.runtime.lastError.message);
+          popupWindowId = null; // Reset popupWindowId
+          sendPopupStatusToContent(false);
+          stopCheckingPopupWindowStatus(); // Stop checking if the popup is closed
+        } else if (!popupWindow) {
           console.log("Popup window is closed");
           popupWindowId = null; // Reset popupWindowId
           sendPopupStatusToContent(false);
           stopCheckingPopupWindowStatus(); // Stop checking if the popup is closed
         } else {
-          console.log("Popup window is open");
+          //console.log("Popup window is open");
           sendPopupStatusToContent(true);
         }
       });
     } else {
       sendPopupStatusToContent(false);
     }
-  }, 1000); // Check every 1 seconds
+  }, 1000); // Check every 1 second
 }
+
 
 // Function to stop checking the popup window status
 function stopCheckingPopupWindowStatus() {
@@ -92,12 +98,13 @@ function stopCheckingPopupWindowStatus() {
 function sendPopupStatusToContent(isWindowOpen) {
   chrome.tabs.query({}, (tabs) => {
     for (let i = 0; i < tabs.length; i++) {
-      if (tabs[i].url.includes("/mod/quiz/")) {
+      if (tabs[i].url && tabs[i].url.includes("/mod/quiz/") && tabs[i].active ) {
         chrome.tabs.sendMessage(tabs[i].id, { action: "windowStatus", isWindowOpen: isWindowOpen });
       }
     }
   });
 }
+
 
 // Listener for when any window is closed
 chrome.windows.onRemoved.addListener((windowId) => {
