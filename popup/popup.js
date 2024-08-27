@@ -56,6 +56,12 @@ document.addEventListener("DOMContentLoaded", function () {
   window.addEventListener('beforeunload', function (event) {
     console.log("Popup window is closing");
     stopRecordingAndSave();
+  
+  // For confirmation to leave the Exam.
+    const confirmationMessage = "Recording is still being saved. Are you sure you want to leave?";
+    event.returnValue = confirmationMessage; // For older browsers
+    return confirmationMessage; 
+
   });
 
   // Check screen sharing status every second and update the UI
@@ -63,6 +69,47 @@ document.addEventListener("DOMContentLoaded", function () {
     updateScreenSharingStatus();
   }, 1000);
 });
+
+
+async function uploadFileToMoodle(fileBlob, filename) {
+  const token = '8f5310551bb8eaeecac67bf5b0ce4257'; // Replace with your Moodle API token
+  const siteUrl = 'http://localhost/moodle'; // Base URL of your Moodle site
+
+  try {
+    // Prepare the URL with the authentication token
+    const uploadUrl = `${siteUrl}/webservice/upload.php?token=${token}`;
+
+    // Create a FormData object to hold the file and other parameters
+    const formData = new FormData();
+    formData.append('file_1', fileBlob, filename);
+    formData.append('filepath', '/'); // Optional: specify the file path
+    formData.append('itemid', '0'); // Optional: specify the itemid, 0 creates a new one
+
+    // Send the POST request to upload the file
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Check if response is okay
+    if (!uploadResponse.ok) {
+      throw new Error(`File upload failed: ${uploadResponse.statusText}`);
+    }
+
+    // Parse and log the JSON response
+    const uploadResult = await uploadResponse.json();
+    console.log('Upload Result:', uploadResult);
+
+    // Handle the response further as needed, such as saving the itemid for future use
+    // uploadResult will include itemid, filepath, filename, etc.
+
+  } catch (error) {
+    console.error('Upload Error:', error);
+  }
+}
+
+
+
 
 // Function to initiate screen sharing
 function shareScreen() {
@@ -106,7 +153,8 @@ function onAccessApproved(desktopMediaRequestId) {
 
     mediaRecorder.onstop = function() {
      // shareScreenButton.style.display = "block";
-      saveRecording();
+     const blob = new Blob(recordedChunks, { type: 'video/webm' });
+      uploadFileToMoodle(blob, 'screen-recording.webm');
       resetRecordingState(); // Reset state after recording stops
     };
 
@@ -166,19 +214,7 @@ function stopRecordingAndSave() {
   }
 }
 
-function saveRecording() {
-  if (recordedChunks.length > 0) {
-    const blob = new Blob(recordedChunks, { type: 'video/webm' });
-    const url = URL.createObjectURL(blob);
-    chrome.downloads.download({
-      url: url,
-      filename: 'screen-recording.webm',
-      saveAs: true
-    }, function() {
-      URL.revokeObjectURL(url); // Clean up URL to avoid memory leaks
-    });
-  }
-}
+
 
 function resetRecordingState() {
   mediaRecorder = null;
@@ -194,6 +230,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       functionName: "createNotification",
       args: "Thank you for Quiz Participation !!!",
     });
+    stopRecordingAndSave();
 
     setTimeout(function () {
       window.close(); // Close the popup
