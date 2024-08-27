@@ -1,11 +1,9 @@
-// This is the service worker script, which executes in its own context
-// when the extension is installed or refreshed (or when you access its console).
-// It would correspond to the background script in chrome extensions v2.
-
 // Import the notification utilities
 importScripts("js/notificationUtils.js");
 
 let popupWindowId = null;
+let checkIntervalId = null; // To store the ID of the interval
+
 
 // Listen for when the extension icon is clicked
 chrome.action.onClicked.addListener((tab) => {
@@ -55,36 +53,64 @@ function openPopupWindow(tab, popupWidth, popupHeight) {
       },
       (popupWindow) => {
         popupWindowId = popupWindow.id;
-        // If you need to execute any content script, do it here
-        // chrome.scripting.executeScript({...});
+        startCheckingPopupWindowStatus(); // Start checking the popup window status
       }
     );
   });
 }
 
-// Listener for when any window is created and send the windowid to the local
-chrome.windows.onCreated.addListener((window) => {
-  console.log(`Window with ID ${window.id} has been created.`);
+// Function to start checking the popup window status
+function startCheckingPopupWindowStatus() {
+  checkIntervalId = setInterval(() => {
+    if (popupWindowId !== null) {
+      chrome.windows.get(popupWindowId, (popupWindow) => {
+        if (chrome.runtime.lastError) {
+          console.error("Error retrieving popup window:", chrome.runtime.lastError.message);
+          popupWindowId = null; // Reset popupWindowId
+          sendPopupStatusToContent(false);
+          stopCheckingPopupWindowStatus(); // Stop checking if the popup is closed
+        } else if (!popupWindow) {
+          console.log("Popup window is closed");
+          popupWindowId = null; // Reset popupWindowId
+          sendPopupStatusToContent(false);
+          stopCheckingPopupWindowStatus(); // Stop checking if the popup is closed
+        } else {
+          //console.log("Popup window is open");
+          sendPopupStatusToContent(true);
+        }
+      });
+    } else {
+      sendPopupStatusToContent(false);
+    }
+  }, 1000); // Check every 1 second
+}
+
+
+// Function to stop checking the popup window status
+function stopCheckingPopupWindowStatus() {
+  if (checkIntervalId) {
+    clearInterval(checkIntervalId);
+    checkIntervalId = null;
+  }
+}
+
+// Function to send popup status to content script
+function sendPopupStatusToContent(isWindowOpen) {
   chrome.tabs.query({}, (tabs) => {
-    let targetTabId = null;
     for (let i = 0; i < tabs.length; i++) {
-      if (tabs[i].url.includes("/mod/quiz/view.php")) {
-        //console.log("found it",tabs[i].url);
-        targetTabId = tabs[i]
-        break;
+      if (tabs[i].url && tabs[i].url.includes("/mod/quiz/") && tabs[i].active ) {
+        chrome.tabs.sendMessage(tabs[i].id, { action: "windowStatus", isWindowOpen: isWindowOpen });
       }
     }
-    if (targetTabId) {
-      console.log(targetTabId, targetTabId.url);
-      chrome.tabs.sendMessage(targetTabId.id, { action: "windowid", windowID: window.id });
-    }
   });
-});
+}
+
 
 // Listener for when any window is closed
 chrome.windows.onRemoved.addListener((windowId) => {
   if (popupWindowId === windowId) {
     popupWindowId = null; // Reset popupWindowId when the popup is closed
+    stopCheckingPopupWindowStatus(); // Stop checking when popup is closed
   }
   console.log(`Window with ID ${windowId} has been closed.`);
 });

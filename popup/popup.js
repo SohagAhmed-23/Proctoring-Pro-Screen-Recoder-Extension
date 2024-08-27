@@ -32,13 +32,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Listener to close popup
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === "closePopup") {
-      window.close(); // Close the popup
-    }
-  });
-
   // Monitor the number of screens at regular intervals
   const checkInterval = setInterval(function () {
     chrome.system.display.getInfo(function (displays) {
@@ -61,10 +54,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Automatically save recording when the popup window is closed
   window.addEventListener('beforeunload', function (event) {
-    console.log(" popup window is closed clicked")
-    
+    console.log("Popup window is closing");
     stopRecordingAndSave();
   });
+
+  // Check screen sharing status every second and update the UI
+  setInterval(() => {
+    updateScreenSharingStatus();
+  }, 1000);
 });
 
 // Function to initiate screen sharing
@@ -85,7 +82,7 @@ function onAccessApproved(desktopMediaRequestId) {
   }
 
   const shareScreenButton = document.getElementById("shareScreen");
-shareScreenButton.style.display="none";
+  shareScreenButton.style.display = "none";
 
   navigator.mediaDevices.getUserMedia({
     video: {
@@ -108,7 +105,7 @@ shareScreenButton.style.display="none";
     };
 
     mediaRecorder.onstop = function() {
-      shareScreenButton.style.display="block";
+     // shareScreenButton.style.display = "block";
       saveRecording();
       resetRecordingState(); // Reset state after recording stops
     };
@@ -119,6 +116,36 @@ shareScreenButton.style.display="none";
   });
 }
 
+// Function to check if screen sharing is active
+function isScreenSharingActive() {
+  const isActive = stream && stream.getVideoTracks().some(track => track.readyState === 'live');
+  return isActive;
+}
+
+// Function to update the screen sharing status in the popup UI
+function updateScreenSharingStatus() {
+  const statusElement = document.getElementById("screenSharingStatus");
+  const isActive = isScreenSharingActive();
+  
+  if (isActive) {
+    statusElement.textContent = "Active";
+    statusElement.style.color ="green";
+  } else {
+    statusElement.textContent = "Inactive";
+    statusElement.style.color ="red";
+  }
+  
+  chrome.tabs.query({}, (tabs) => {
+    for (let i = 0; i < tabs.length; i++) {
+      if (tabs[i].url.includes("/mod/quiz/")) {
+        chrome.tabs.sendMessage(tabs[i].id, { action: "isScreenSharingActive", isActive: isActive });
+      }
+    }
+  });
+  
+}
+
+// Function to stop recording and save the file
 function stopRecording() {
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     mediaRecorder.stop();
@@ -128,19 +155,10 @@ function stopRecording() {
   }
   chrome.storage.local.set({ isRecording: false });
 
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      func: removeCameraOverlay
-    });
-  });
-
   resetRecordingState(); // Ensure state is reset after stopping recording
 }
 
 function stopRecordingAndSave() {
-  console.log("stopRecording and save click");
-  
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     mediaRecorder.stop(); // This will trigger mediaRecorder.onstop and save the recording
   } else {
@@ -167,15 +185,6 @@ function resetRecordingState() {
   stream = null;
   recordedChunks = [];
 }
-
-// Function to remove the camera overlay
-function removeCameraOverlay() {
-  const cameraOverlay = document.getElementById('cameraOverlay');
-  if (cameraOverlay) {
-    cameraOverlay.remove();
-  }
-}
-
 
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
