@@ -128,9 +128,11 @@ function updateScreenSharingStatus() {
   const isActive = isScreenSharingActive();
   
   if (isActive) {
-    statusElement.textContent = "Screen sharing is active";
+    statusElement.textContent = "Active";
+    statusElement.style.color ="green";
   } else {
-    statusElement.textContent = "Screen sharing is not active";
+    statusElement.textContent = "Inactive";
+    statusElement.style.color ="red";
   }
   
   chrome.tabs.query({}, (tabs) => {
