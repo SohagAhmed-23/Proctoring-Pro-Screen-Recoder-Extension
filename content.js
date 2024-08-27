@@ -47,8 +47,7 @@ function handleWindowStatus(isWindowOpen) {
 }
 
 
-if (window.location.href.includes("/mod/quiz/") && !window.location.href.includes("/mod/quiz/review.php") && 
-!window.location.href.includes("/mod/quiz/view.php")) {
+if (window.location.href.includes("/mod/quiz/attempt.php")) {
   
     // Function to create the camera overlay
     function createCameraOverlay() {
