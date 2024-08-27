@@ -108,7 +108,6 @@ function onAccessApproved(desktopMediaRequestId) {
      // shareScreenButton.style.display = "block";
       saveRecording();
       resetRecordingState(); // Reset state after recording stops
-    
     };
 
     mediaRecorder.start();
@@ -154,13 +153,6 @@ function stopRecording() {
   }
   chrome.storage.local.set({ isRecording: false });
 
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      func: removeCameraOverlay
-    });
-  });
-
   resetRecordingState(); // Ensure state is reset after stopping recording
 }
 
@@ -192,13 +184,6 @@ function resetRecordingState() {
   recordedChunks = [];
 }
 
-// Function to remove the camera overlay
-function removeCameraOverlay() {
-  const cameraOverlay = document.getElementById('cameraOverlay');
-  if (cameraOverlay) {
-    cameraOverlay.remove();
-  }
-}
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url.includes("mod/quiz/review.php")) {
