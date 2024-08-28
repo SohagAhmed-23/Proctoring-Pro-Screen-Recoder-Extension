@@ -14,10 +14,14 @@ body {
   color: red;
 }
 
+.logo {
+  display: flex;
+justify-content: center;
+}
 
 .hr {
-  margin-top: 35px;
-  margin-bottom: 35px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   height: 2px;
   width: calc(100% - 10px);
   background-color: rgba(223, 225, 237, 0.7);
